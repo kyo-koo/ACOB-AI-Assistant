@@ -20,14 +20,11 @@ const TrashIcon = () => (
 
 const FileViewer = () => {
   const [files, setFiles] = useState([]);
+    const [refreshTrigger, setRefreshTrigger] = useState(0); // New state
 
   useEffect(() => {
-    const interval = setInterval(() => {
       fetchFiles();
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, []);
+    }, [refreshTrigger]);
 
   const fetchFiles = async () => {
     const resp = await fetch("/api/assistants/files", {
@@ -35,6 +32,7 @@ const FileViewer = () => {
     });
     const data = await resp.json();
     setFiles(data);
+    setRefreshTrigger((prev) => prev + 1); // Trigger refresh
   };
 
   const handleFileDelete = async (fileId) => {
@@ -52,6 +50,7 @@ const FileViewer = () => {
       method: "POST",
       body: data,
     });
+    setRefreshTrigger((prev) => prev + 1); // Trigger refres
   };
 
   return (

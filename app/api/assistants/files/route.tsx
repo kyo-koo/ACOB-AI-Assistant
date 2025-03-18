@@ -3,20 +3,7 @@ import { openai } from "@/app/openai";
 import fs from "fs";
 import path from "path";
 
-const FILE_PATH = path.join(process.cwd(), "app/api/assistants/codeInterpreter/", `${assistantId}.json`);
-if (!fs.existsSync(FILE_PATH)) {
-  fs.writeFileSync(FILE_PATH, JSON.stringify([]), 'utf8'); // Creates an empty JSON file
-};
-// Type definition for stored file metadata
-type FileEntry = { fileId: string; filename: string; assistantId: string };
 
-const readData = (): FileEntry[] => {
-    const data = fs.readFileSync(FILE_PATH, "utf8");
-    return JSON.parse(data) as FileEntry[];
-};
-const writeData = (data: FileEntry[]) => {
-    fs.writeFileSync(FILE_PATH, JSON.stringify(data, null, 2), "utf8");
-};
 
 // upload file to assistant's vector store
 export async function POST(request) {
@@ -41,28 +28,42 @@ export async function POST(request) {
           },
         },
       });
+      // Store file metadata
+      const FILE_PATH = path.join(process.cwd(), "app/api/assistants/codeInterpreter/", `${assistantId}.json`);
+      if (!fs.existsSync(FILE_PATH)) {
+        fs.writeFileSync(FILE_PATH, JSON.stringify([]), 'utf8'); // Creates an empty JSON file
+      };
+      // Type definition for stored file metadata
+      type FileEntry = { fileId: string; filename: string; assistantId: string };
+      const readData = (): FileEntry[] => {
+        const data = fs.readFileSync(FILE_PATH, "utf8");
+        return JSON.parse(data) as FileEntry[];
+      };
+      const writeData = (data: FileEntry[]) => {
+        fs.writeFileSync(FILE_PATH, JSON.stringify(data, null, 2), "utf8");
+      };
+      const files = readData();
+      files.push({ fileId: openaiFile.id, filename: file.name, assistantId });
+      writeData(files);
     } else {
       // Run the second set of code
       await openai.beta.vectorStores.files.create(vectorStoreId, {
         file_id: openaiFile.id,
       });
 
-  }
-  // Store file metadata
-  const files = readData();
-  files.push({ fileId: openaiFile.id, filename: file.name, assistantId });
-  writeData(files);
+    }
+  
   return new Response(JSON.stringify({ success: true, fileId: openaiFile.id, filename: file.name, assistantId }), {
     status: 200,
     headers: { "Content-Type": "application/json" },
-  });
+    });
   }
 
 // list files in assistant's vector store
 export async function GET() {
   const vectorStoreId = await getOrCreateVectorStore(); // get or create vector store
   const fileList = await openai.beta.vectorStores.files.list(vectorStoreId);
-
+  
   const filesArray = await Promise.all(
     fileList.data.map(async (file) => {
       const fileDetails = await openai.files.retrieve(file.id);

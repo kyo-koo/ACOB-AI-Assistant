@@ -19,27 +19,7 @@ const writeData = (data: FileEntry[]) => {
     fs.writeFileSync(FILE_PATH, JSON.stringify(data, null, 2), "utf8");
 };
 
-// upload file to assistant's code interpreter
-export async function POST(request: { formData: () => any; }) {
-  const formData = await request.formData(); // process file as FormData
-  const file = formData.get("file") as File; // retrieve the single file from FormData
 
-// upload using the file stream
-const openaiFile = await openai.files.create({
-  file: file,
-  purpose: "assistants",
-});
-// Update an assistant using the file ID
-
-// Store file metadata
-const files = readData();
-files.push({ fileId: openaiFile.id, filename: file.name, assistantId });
-writeData(files);
-return new Response(JSON.stringify({ success: true, fileId: openaiFile.id, filename: file.name, assistantId }), {
-  status: 200,
-  headers: { "Content-Type": "application/json" },
-});
-}
 
 // list files in assistant's file storage
 export async function GET() {
