@@ -60,7 +60,7 @@ const CodeInterpreter = () => {
 
   return (
     <div className={styles.fileViewer}>
-    <div className={styles.title}>Code Interpreter_test</div>
+    <div className={styles.title}>Code Interpreter</div>
     <div
         className={`${styles.filesList} ${
           files.length !== 0 ? styles.grow : ""
@@ -73,7 +73,6 @@ const CodeInterpreter = () => {
             <div key={file.file_id} className={styles.fileEntry}>
               <div className={styles.fileName}>
                 <span className={styles.fileName}>{file.filename}</span>
-                <span className={styles.fileStatus}>{file.status}</span>
               </div>
               <span onClick={() => handleciFileDelete(file.file_id)}>
               <TrashIcon />
