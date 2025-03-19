@@ -29,17 +29,10 @@ export async function POST(request) {
     purpose: "assistants",
   });
 
-  
   const fileExtension = openaiFile.filename.split('.').pop().toLowerCase();
     if (fileExtension === 'csv' || fileExtension === 'xlsx') {
       // Run the first set of code
-      await openai.beta.assistants.update(assistantId, {
-        tool_resources: {
-          code_interpreter: {
-            file_ids: [openaiFile.id],
-          },
-        },
-      });
+      
       // Store file metadata
       const FILE_PATH = path.join(process.cwd(), "app/api/assistants/codeInterpreter/", `${assistantId}.json`);
       if (!fs.existsSync(FILE_PATH)) {
@@ -57,6 +50,19 @@ export async function POST(request) {
       const files = readData();
       files.push({ fileId: openaiFile.id, filename: file.name, assistantId });
       writeData(files);
+      const fileList = readData() || []; // Ensure it's always an array
+    const filteredFiles = fileList.filter(
+      (file) => file?.filename && (file.filename.endsWith(".csv") || file.filename.endsWith(".xlsx"))
+  );
+  const fileIds: string[] = filteredFiles.map((file) => file.fileId);
+
+    await openai.beta.assistants.update(assistantId, {
+      tool_resources: {
+        code_interpreter: {
+          file_ids: fileIds,
+        },
+      },
+    });
     } else {
       alert("Only CSV or XLSX files are allowed.")
 
@@ -85,15 +91,7 @@ export async function GET() {
       })
     );
 
-    const fileIds: string[] = filteredFiles.map((file) => file.fileId);
-
-    await openai.beta.assistants.update(assistantId, {
-      tool_resources: {
-        code_interpreter: {
-          file_ids: fileIds,
-        },
-      },
-    });
+  
     return new Response(JSON.stringify(filesArray), {
       headers: { "Content-Type": "application/json" },
     });
@@ -103,11 +101,26 @@ export async function DELETE(request) {
   const body = await request.json();
   const fileId = body.fileId;
    // Delete file from OpenAI
-   await openai.files.del(fileId); // delete file
+ //  await openai.files.del(fileId); // delete file
   let files = readData();
   files = files.filter(file => file.fileId !== fileId);
   writeData(files);
-  
+
+
+  const fileList = readData() || []; // Ensure it's always an array
+    const filteredFiles = fileList.filter(
+      (file) => file?.filename && (file.filename.endsWith(".csv") || file.filename.endsWith(".xlsx"))
+  );
+  const fileIds: string[] = filteredFiles.map((file) => file.fileId);
+
+    await openai.beta.assistants.update(assistantId, {
+      tool_resources: {
+        code_interpreter: {
+          file_ids: fileIds,
+        },
+      },
+    });
+    await openai.files.del(fileId); // delete file
   return new Response(JSON.stringify({ success: true, fileId }), {
     status: 200,
     headers: { "Content-Type": "application/json" },
