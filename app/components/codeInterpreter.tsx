@@ -60,7 +60,7 @@ const CodeInterpreter = () => {
 
   return (
     <div className={styles.fileViewer}>
-    <div className={styles.title}>Code Interpreter</div>
+    <div className={styles.title}>Code Interpreter_test</div>
     <div
         className={`${styles.filesList} ${
           files.length !== 0 ? styles.grow : ""
