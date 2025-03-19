@@ -18,42 +18,68 @@ const readData = (): FileEntry[] => {
 const writeData = (data: FileEntry[]) => {
     fs.writeFileSync(FILE_PATH, JSON.stringify(data, null, 2), "utf8");
 };
-
-// upload file to assistant's code interpreter
-export async function POST(request: { formData: () => any; }) {
+// upload file to assistant's vector store
+export async function POST(request) {
   const formData = await request.formData(); // process file as FormData
   const file = formData.get("file") as File; // retrieve the single file from FormData
+  
+  // upload using the file stream
+  const openaiFile = await openai.files.create({
+    file: file,
+    purpose: "assistants",
+  });
 
-// upload using the file stream
-const openaiFile = await openai.files.create({
-  file: file,
-  purpose: "assistants",
-});
-// Update an assistant using the file ID
+  
+  const fileExtension = openaiFile.filename.split('.').pop().toLowerCase();
+    if (fileExtension === 'csv' || fileExtension === 'xlsx') {
+      // Run the first set of code
+      await openai.beta.assistants.update(assistantId, {
+        tool_resources: {
+          code_interpreter: {
+            file_ids: [openaiFile.id],
+          },
+        },
+      });
+      // Store file metadata
+      const FILE_PATH = path.join(process.cwd(), "app/api/assistants/codeInterpreter/", `${assistantId}.json`);
+      if (!fs.existsSync(FILE_PATH)) {
+        fs.writeFileSync(FILE_PATH, JSON.stringify([]), 'utf8'); // Creates an empty JSON file
+      };
+      // Type definition for stored file metadata
+      type FileEntry = { fileId: string; filename: string; assistantId: string };
+      const readData = (): FileEntry[] => {
+        const data = fs.readFileSync(FILE_PATH, "utf8");
+        return JSON.parse(data) as FileEntry[];
+      };
+      const writeData = (data: FileEntry[]) => {
+        fs.writeFileSync(FILE_PATH, JSON.stringify(data, null, 2), "utf8");
+      };
+      const files = readData();
+      files.push({ fileId: openaiFile.id, filename: file.name, assistantId });
+      writeData(files);
+    } else {
+      alert("Only CSV or XLSX files are allowed.")
 
-// Store file metadata
-const files = readData();
-files.push({ fileId: openaiFile.id, filename: file.name, assistantId });
-writeData(files);
-return new Response(JSON.stringify({ success: true, fileId: openaiFile.id, filename: file.name, assistantId }), {
-  status: 200,
-  headers: { "Content-Type": "application/json" },
-});
-}
-
+    }
+  
+  return new Response(JSON.stringify({ success: true, fileId: openaiFile.id, filename: file.name, assistantId }), {
+    status: 200,
+    headers: { "Content-Type": "application/json" },
+    });
+  }
 // list files in assistant's file storage
 export async function GET() {
 
     const fileList = readData() || []; // Ensure it's always an array
     const filteredFiles = fileList.filter(
       (file) => file?.filename && (file.filename.endsWith(".csv") || file.filename.endsWith(".xlsx"))
-    );
+  );
 
     const filesArray = await Promise.all(
       filteredFiles.map(async (file) => {
         const fileDetails = await openai.files.retrieve(file.fileId);
         return {
-          file_id: file.fileId,
+          file_id: fileDetails.id,
           filename: fileDetails.filename,
         };
       })
@@ -68,13 +94,10 @@ export async function GET() {
         },
       },
     });
-
     return new Response(JSON.stringify(filesArray), {
       headers: { "Content-Type": "application/json" },
     });
-  
 }
-
 // delete file from assistant's vector store
 export async function DELETE(request) {
   const body = await request.json();

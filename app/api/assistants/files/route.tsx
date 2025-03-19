@@ -1,27 +1,10 @@
 import { assistantId } from "@/app/assistant-config";
 import { openai } from "@/app/openai";
-import fs from "fs";
-import path from "path";
-
-const FILE_PATH = path.join(process.cwd(), "app/api/assistants/codeInterpreter/", `${assistantId}.json`);
-if (!fs.existsSync(FILE_PATH)) {
-  fs.writeFileSync(FILE_PATH, JSON.stringify([]), 'utf8'); // Creates an empty JSON file
-};
-// Type definition for stored file metadata
-type FileEntry = { fileId: string; filename: string; assistantId: string };
-
-const readData = (): FileEntry[] => {
-    const data = fs.readFileSync(FILE_PATH, "utf8");
-    return JSON.parse(data) as FileEntry[];
-};
-const writeData = (data: FileEntry[]) => {
-    fs.writeFileSync(FILE_PATH, JSON.stringify(data, null, 2), "utf8");
-};
 
 // upload file to assistant's vector store
 export async function POST(request) {
   const formData = await request.formData(); // process file as FormData
-  const file = formData.get("file") as File; // retrieve the single file from FormData
+  const file = formData.get("file"); // retrieve the single file from FormData
   const vectorStoreId = await getOrCreateVectorStore(); // get or create vector store
 
   // upload using the file stream
@@ -30,33 +13,12 @@ export async function POST(request) {
     purpose: "assistants",
   });
 
-  
-  const fileExtension = openaiFile.filename.split('.').pop().toLowerCase();
-    if (fileExtension === 'csv' || fileExtension === 'xlsx') {
-      // Run the first set of code
-      await openai.beta.assistants.update(assistantId, {
-        tool_resources: {
-          code_interpreter: {
-            file_ids: [openaiFile.id],
-          },
-        },
-      });
-    } else {
-      // Run the second set of code
-      await openai.beta.vectorStores.files.create(vectorStoreId, {
-        file_id: openaiFile.id,
-      });
-
-  }
-  // Store file metadata
-  const files = readData();
-  files.push({ fileId: openaiFile.id, filename: file.name, assistantId });
-  writeData(files);
-  return new Response(JSON.stringify({ success: true, fileId: openaiFile.id, filename: file.name, assistantId }), {
-    status: 200,
-    headers: { "Content-Type": "application/json" },
+  // add file to vector store
+  await openai.beta.vectorStores.files.create(vectorStoreId, {
+    file_id: openaiFile.id,
   });
-  }
+  return new Response();
+}
 
 // list files in assistant's vector store
 export async function GET() {
@@ -77,7 +39,6 @@ export async function GET() {
       };
     })
   );
-  
   return Response.json(filesArray);
 }
 
@@ -88,7 +49,7 @@ export async function DELETE(request) {
 
   const vectorStoreId = await getOrCreateVectorStore(); // get or create vector store
   await openai.beta.vectorStores.files.del(vectorStoreId, fileId); // delete file from vector store
-  await openai.files.del(fileId); // delete file
+  await openai.files.del(fileId);
   return new Response();
 }
 
