@@ -19,24 +19,24 @@ const TrashIcon = () => (
 );
 
 const CodeInterpreter = () => {
-  const [files, setFiles] = useState([]);
+  const [files, setciFiles] = useState([]);
   const [refreshTrigger, setRefreshTrigger] = useState(0); // New state
 
   // Fetch files when the component mounts or refreshTrigger changes
   useEffect(() => {
-    fetchFiles();
+    fetchciFiles();
   }, [refreshTrigger]); 
 
-  const fetchFiles = async () => {
+  const fetchciFiles = async () => {
     const resp = await fetch("/api/assistants/codeInterpreter", {
       method: "GET",
     });
     const data = await resp.json();
-    setFiles(data);
+    setciFiles(data);
     setRefreshTrigger((prev) => prev + 1); // Trigger refresh
   };
 
-  const handleFileDelete = async (fileId) => {
+  const handleciFileDelete = async (fileId) => {
     const resp = await fetch("/api/assistants/codeInterpreter", {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
@@ -45,7 +45,7 @@ const CodeInterpreter = () => {
     setRefreshTrigger((prev) => prev + 1); // Trigger refresh
   };
 
-  const handleFileUpload = async (event) => {
+  const handleciFileUpload = async (event) => {
     const data = new FormData();
     if (event.target.files.length < 0) return;
     data.append("file", event.target.files[0]);
@@ -75,7 +75,7 @@ const CodeInterpreter = () => {
                 <span className={styles.fileName}>{file.filename}</span>
                 <span className={styles.fileStatus}>{file.status}</span>
               </div>
-              <span onClick={() => handleFileDelete(file.file_id)}>
+              <span onClick={() => handleciFileDelete(file.file_id)}>
               <TrashIcon />
               </span>
             </div>
@@ -83,15 +83,17 @@ const CodeInterpreter = () => {
         )}
       </div>
       <div className={styles.fileUploadContainer}>
-        <label htmlFor="file-upload" className={styles.fileUploadBtn}>
+        <label htmlFor="cifile-upload" className={styles.fileUploadBtn}>
           Attach files
         </label>
         <input
           type="file"
-          id="file-upload"
+          id="cifile-upload"
           name="file-upload"
+          accept = ".csv,.xlsx"
+          multiple
           className={styles.fileUploadInput}
-          onChange={handleFileUpload}
+          onChange={handleciFileUpload}
         />
       </div>
     </div>

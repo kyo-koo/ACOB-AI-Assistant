@@ -20,11 +20,11 @@ const TrashIcon = () => (
 
 const FileViewer = () => {
   const [files, setFiles] = useState([]);
-    const [refreshTrigger, setRefreshTrigger] = useState(0); // New state
+  const [refreshTrigger, setRefreshTrigger] = useState(0); // New state
 
   useEffect(() => {
       fetchFiles();
-    }, [refreshTrigger]);
+    }, [refreshTrigger]); 
 
   const fetchFiles = async () => {
     const resp = await fetch("/api/assistants/files", {
@@ -40,6 +40,7 @@ const FileViewer = () => {
       method: "DELETE",
       body: JSON.stringify({ fileId }),
     });
+    setRefreshTrigger((prev) => prev + 1); // Trigger refresh
   };
 
   const handleFileUpload = async (event) => {
@@ -50,11 +51,12 @@ const FileViewer = () => {
       method: "POST",
       body: data,
     });
-    setRefreshTrigger((prev) => prev + 1); // Trigger refres
+    setRefreshTrigger((prev) => prev + 1); // Trigger refresh
   };
 
   return (
-    <div className={styles.fileViewer}><div className={styles.title}>Vector Store</div>
+    <div className={styles.fileViewer}>
+      <div className={styles.title}>Vector Store</div>
       <div
         className={`${styles.filesList} ${
           files.length !== 0 ? styles.grow : ""
@@ -85,6 +87,7 @@ const FileViewer = () => {
           id="file-upload"
           name="file-upload"
           className={styles.fileUploadInput}
+          accept = ".txt,.docx"
           multiple
           onChange={handleFileUpload}
         />
