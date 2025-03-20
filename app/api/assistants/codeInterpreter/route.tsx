@@ -18,7 +18,7 @@ const readData = (): FileEntry[] => {
 const writeData = (data: FileEntry[]) => {
     fs.writeFileSync(FILE_PATH, JSON.stringify(data, null, 2), "utf8");
 };
-// upload file to assistant's vector store
+// upload file to assistant's file storage
 export async function POST(request) {
   const formData = await request.formData(); // process file as FormData
   const file = formData.get("file") as File; // retrieve the single file from FormData
@@ -31,22 +31,7 @@ export async function POST(request) {
 
   const fileExtension = openaiFile.filename.split('.').pop().toLowerCase();
     if (fileExtension === 'csv' || fileExtension === 'xlsx') {
-      // Run the first set of code
-      
       // Store file metadata
-      const FILE_PATH = path.join(process.cwd(), "app/api/assistants/codeInterpreter/", `${assistantId}.json`);
-      if (!fs.existsSync(FILE_PATH)) {
-        fs.writeFileSync(FILE_PATH, JSON.stringify([]), 'utf8'); // Creates an empty JSON file
-      };
-      // Type definition for stored file metadata
-      type FileEntry = { fileId: string; filename: string; assistantId: string };
-      const readData = (): FileEntry[] => {
-        const data = fs.readFileSync(FILE_PATH, "utf8");
-        return JSON.parse(data) as FileEntry[];
-      };
-      const writeData = (data: FileEntry[]) => {
-        fs.writeFileSync(FILE_PATH, JSON.stringify(data, null, 2), "utf8");
-      };
       const files = readData();
       files.push({ fileId: openaiFile.id, filename: file.name, assistantId });
       writeData(files);
@@ -68,10 +53,7 @@ export async function POST(request) {
 
     }
   
-  return new Response(JSON.stringify({ success: true, fileId: openaiFile.id, filename: file.name, assistantId }), {
-    status: 200,
-    headers: { "Content-Type": "application/json" },
-    });
+  return new Response();
   }
 // list files in assistant's file storage
 export async function GET() {
@@ -90,11 +72,7 @@ export async function GET() {
         };
       })
     );
-
-  
-    return new Response(JSON.stringify(filesArray), {
-      headers: { "Content-Type": "application/json" },
-    });
+    return Response.json(filesArray);
 }
 // delete file from assistant's vector store
 export async function DELETE(request) {
@@ -105,7 +83,6 @@ export async function DELETE(request) {
   let files = readData();
   files = files.filter(file => file.fileId !== fileId);
   writeData(files);
-
 
   const fileList = readData() || []; // Ensure it's always an array
     const filteredFiles = fileList.filter(
@@ -121,8 +98,5 @@ export async function DELETE(request) {
       },
     });
     await openai.files.del(fileId); // delete file
-  return new Response(JSON.stringify({ success: true, fileId }), {
-    status: 200,
-    headers: { "Content-Type": "application/json" },
-  });
+  return new Response();
 }

@@ -32,7 +32,7 @@ const FileViewer = () => {
     });
     const data = await resp.json();
     setFiles(data);
-    setRefreshTrigger((prev) => prev + 1); // Trigger refresh
+
   };
 
   const handleFileDelete = async (fileId) => {

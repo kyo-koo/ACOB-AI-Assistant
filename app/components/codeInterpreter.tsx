@@ -33,7 +33,7 @@ const CodeInterpreter = () => {
     });
     const data = await resp.json();
     setciFiles(data);
-    setRefreshTrigger((prev) => prev + 1); // Trigger refresh
+
   };
 
   const handleciFileDelete = async (fileId) => {
