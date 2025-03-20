@@ -33,7 +33,6 @@ const CodeInterpreter = () => {
     });
     const data = await resp.json();
     setciFiles(data);
-
   };
 
   const handleciFileDelete = async (fileId) => {

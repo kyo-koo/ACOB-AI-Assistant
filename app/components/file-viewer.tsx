@@ -32,7 +32,6 @@ const FileViewer = () => {
     });
     const data = await resp.json();
     setFiles(data);
-
   };
 
   const handleFileDelete = async (fileId) => {

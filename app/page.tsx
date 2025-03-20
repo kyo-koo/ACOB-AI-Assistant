@@ -34,7 +34,6 @@ const FunctionCalling = () => {
     <main className={styles.main}>
       <div className={styles.container}>
         <div className={styles.column}>
-        
           <FileViewer />
           <CodeInterpreter />
         </div>
