@@ -4,7 +4,6 @@ import React, { useState } from "react";
 import styles from "./page.module.css";
 import Chat from "../../components/chat";
 import FileViewer from "../../components/file-viewer";
-import CodeInterpreter_Copy from "../../components/codeInterpreter_copy";
 import ThreadViewer from "../../components/thread-viewer";
 
 const FunctionCalling = () => {
@@ -36,7 +35,6 @@ const FunctionCalling = () => {
         <div className={styles.column}>
 
           <FileViewer />
-          <CodeInterpreter_Copy />
           <div id="root"></div>
         </div>
         <div className={styles.chatContainer}>
