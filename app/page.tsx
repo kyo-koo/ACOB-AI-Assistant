@@ -1,51 +1,53 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import styles from "./page.module.css";
-import Chat from "./components/chat";
-import FileViewer from "./components/file-viewer";
-import CodeInterpreter from "./components/codeInterpreter";
-import ThreadViewer from "./components/thread-viewer";
 
-const FunctionCalling = () => {
-  
+const Home = () => {
+  const [inputDisabled, setInputDisabled] = useState(false);
+  const [userInput, setUserInput] = useState("");
+  const categories = {
+    //"Basic chat": "basic-chat",
+    "Function calling": "function-calling"
+    //"File search": "file-search",
+    //All: "all",
+  };
 
-  // return (
-  //   <main className={styles.main}>
-  //     <div className={styles.container}>
-  //       <div className={styles.fileViewer}>
-  //         <FileViewer />
-  //       </div>
-  //       <div className={styles.chatContainer}>
-  //         <div className={styles.weatherWidget}>
-  //           <div className={styles.weatherContainer}>
-  //             <WeatherWidget {...weatherData} />
-  //           </div>
-  //         </div>
-  //         <div className={styles.chat}>
-  //           <Chat functionCallHandler={functionCallHandler} />
-  //         </div>
-  //       </div>
-  //     </div>
-  //   </main>
-  // );
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!userInput.trim()) return;
+    setUserInput("");
+    setInputDisabled(true);
+  }
 
   return (
     <main className={styles.main}>
-      <div className={styles.container}>
-        <div className={styles.column}>
-        
-          <FileViewer />
-          <CodeInterpreter />
-        </div>
-        <div className={styles.chatContainer}>
-          <div className={styles.chat}>
-            <Chat />
-          </div>
-        </div>
+      <div className={styles.title}>
+        ACOB AI Assistant
       </div>
+      <div className={styles.container}>
+        {Object.entries(categories).map(([name, url]) => (
+          <a key={name} className={styles.category} href={`/examples/${url}`}>
+            {name}
+          </a>
+        ))}
+      </div>
+      <input
+          type="text"
+          className={styles.input}
+          value={userInput}
+          onChange={(e) => setUserInput(e.target.value)}
+          placeholder="Username"
+        />
+        <button
+          type="submit"
+          className={styles.button}
+          disabled={inputDisabled}
+        >
+          Log in
+        </button>
     </main>
   );
 };
 
-export default FunctionCalling;
+export default Home;
