@@ -19,43 +19,56 @@ const TrashIcon = () => (
 );
 
 const ThreadViewer = () => {
-  const [files, setFiles] = useState([]);
+  const [threads, setThreads] = useState([]);
   const [refreshTrigger, setRefreshTrigger] = useState(0); // New state
 
+  // Fetch files when the component mounts or refreshTrigger changes
   useEffect(() => {
-      fetchFiles();
-    }, [refreshTrigger]); 
+    fetchThreads();
+  }, [refreshTrigger]); 
 
-  const fetchFiles = async () => {
+  const fetchThreads = async () => {
     const resp = await fetch("/api/assistants/threads", {
       method: "GET",
     });
     const data = await resp.json();
-    setFiles(data);
-    setRefreshTrigger((prev) => prev + 1); // Trigger refresh
+    setThreads(data);
   };
 
+  const handleThreadDelete = async (threadId) => {
+    const resp = await fetch("/api/assistants/threads", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({threadId }),
+    });
+    setRefreshTrigger((prev) => prev + 1); // Trigger refresh
+  };
+  
   return (
     <div className={styles.fileViewer}>
-      <div className={styles.title}>Threads</div>
-      <div
+    <div className={styles.title}>Threads</div>
+    <div
         className={`${styles.filesList} ${
-          files.length !== 0 ? styles.grow : ""
+          threads.length !== 0 ? styles.grow : ""
         }`}
       >
-        {files.length === 0 ? (
+        {threads.length === 0 ? (
           <div className={styles.title}>No thread found</div>
         ) : (
-          files.map((file) => (
-            <div key={file.file_id} className={styles.fileEntry}>
+          Array.isArray(threads) && threads.length > 0 && threads.map((thread) => (
+            <div key={thread.thread_id} className={styles.fileEntry}>
               <div className={styles.fileName}>
-                <span className={styles.fileName}>{file.filename}</span>
-                <span className={styles.fileStatus}>{file.status}</span>
+                <span className={styles.fileName}>{thread.thread_summary}</span>
+                <span className={styles.fileStatus}>{thread.thread_created}</span>
               </div>
+              <span onClick={() => handleThreadDelete(thread.thread_id)}>
+              <TrashIcon />
+              </span>
             </div>
           ))
         )}
       </div>
+      
     </div>
   );
 };

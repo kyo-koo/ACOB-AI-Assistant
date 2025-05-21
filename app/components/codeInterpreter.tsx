@@ -72,7 +72,7 @@ const CodeInterpreter = () => {
             <div key={file.file_id} className={styles.fileEntry}>
               <div className={styles.fileName}>
                 <span className={styles.fileName}>{file.filename}</span>
-                <span className={styles.fileName}>{file.file_id}</span>
+                <span className={styles.fileStatus}>{file.file_id}</span>
               </div>
               <span onClick={() => handleciFileDelete(file.file_id)}>
               <TrashIcon />

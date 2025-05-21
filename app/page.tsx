@@ -36,6 +36,7 @@ const FunctionCalling = () => {
         <div className={styles.column}>
           <FileViewer />
           <CodeInterpreter />
+          <ThreadViewer />
         </div>
         <div className={styles.chatContainer}>
           <div className={styles.chat}>
