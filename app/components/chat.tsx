@@ -74,31 +74,31 @@ const Chat = ({
     scrollToBottom();
   }, [messages]);
 
-  // create a new threadID when chat component created
-  useEffect(() => {
-    const createThread = async () => {
-      const res = await fetch(`/api/assistants/threads`, {
-        method: "POST",
-      });
-      const data = await res.json();
-      setThreadId(data.threadId);
-    };
-    createThread();
-  }, []);
+  const sendMessage = async (text: string) => {
+  let currentThreadId = threadId;
 
-  const sendMessage = async (text) => {
-    const response = await fetch(
-      `/api/assistants/threads/${threadId}/messages`,
-      {
-        method: "POST",
-        body: JSON.stringify({
-          content: text,
-        }),
-      }
-    );
-    const stream = AssistantStream.fromReadableStream(response.body);
-    handleReadableStream(stream);
-  };
+  // Create thread if one doesn't exist
+  if (!currentThreadId) {
+    const res = await fetch("/api/assistants/threads", {
+      method: "POST",
+    });
+    const data = await res.json();
+    currentThreadId = data.threadId;
+    setThreadId(currentThreadId);
+  }
+
+  const response = await fetch(
+    `/api/assistants/threads/${currentThreadId}/messages`,
+    {
+      method: "POST",
+      body: JSON.stringify({
+        content: text,
+      }),
+    }
+  );
+  const stream = AssistantStream.fromReadableStream(response.body);
+  handleReadableStream(stream);
+};
 
   const submitActionResult = async (runId, toolCallOutputs) => {
     const response = await fetch(

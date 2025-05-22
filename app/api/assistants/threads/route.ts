@@ -79,9 +79,9 @@ export async function DELETE(request) {
 export async function POST() {
   const thread = await openai.beta.threads.create();
   // Store thread metadata
-        const threads = readData();
-        threads.push({ threadId: thread.id,assistantId, created_at:thread.created_at  });
-        writeData(threads);
-        const fileList = readData() || []; 
+  const threads = readData();
+  threads.push({ threadId: thread.id,assistantId, created_at:thread.created_at  });
+  writeData(threads);
+  const fileList = readData() || []; 
   return Response.json({ threadId: thread.id });
 }
