@@ -7,40 +7,21 @@ import FileViewer from "./components/file-viewer";
 import CodeInterpreter from "./components/codeInterpreter";
 import ThreadViewer from "./components/thread-viewer";
 
+// app/page.tsx or wherever you're using the Chat component
 const FunctionCalling = () => {
-  
-
-  // return (
-  //   <main className={styles.main}>
-  //     <div className={styles.container}>
-  //       <div className={styles.fileViewer}>
-  //         <FileViewer />
-  //       </div>
-  //       <div className={styles.chatContainer}>
-  //         <div className={styles.weatherWidget}>
-  //           <div className={styles.weatherContainer}>
-  //             <WeatherWidget {...weatherData} />
-  //           </div>
-  //         </div>
-  //         <div className={styles.chat}>
-  //           <Chat functionCallHandler={functionCallHandler} />
-  //         </div>
-  //       </div>
-  //     </div>
-  //   </main>
-  // );
-
+  const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null);
   return (
     <main className={styles.main}>
       <div className={styles.container}>
         <div className={styles.column}>
           <FileViewer />
           <CodeInterpreter />
-          <ThreadViewer />
+          <ThreadViewer onSelectThread={setSelectedThreadId} />
+
         </div>
         <div className={styles.chatContainer}>
           <div className={styles.chat}>
-            <Chat />
+            <Chat threadId={selectedThreadId ?? ""} />
           </div>
         </div>
       </div>

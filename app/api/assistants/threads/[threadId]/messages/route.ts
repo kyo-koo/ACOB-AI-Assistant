@@ -18,3 +18,12 @@ export async function POST(request, { params: { threadId } }) {
 
   return new Response(stream.toReadableStream());
 }
+
+// Fetch all messages from a thread
+export async function GET(request, { params: { threadId } }) {
+  const messages = await openai.beta.threads.messages.list(threadId);
+
+  return Response.json({
+    messages: messages.data.reverse(), // reverse to show oldest first
+  });
+}

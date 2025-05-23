@@ -52,18 +52,52 @@ const Message = ({ role, text }: MessageProps) => {
 };
 
 type ChatProps = {
+  threadId?: string;
   functionCallHandler?: (
     toolCall: RequiredActionFunctionToolCall
   ) => Promise<string>;
 };
 
+
 const Chat = ({
+  threadId: initialThreadId = "",
   functionCallHandler = () => Promise.resolve(""), // default to return empty string
 }: ChatProps) => {
   const [userInput, setUserInput] = useState("");
   const [messages, setMessages] = useState([]);
   const [inputDisabled, setInputDisabled] = useState(false);
-  const [threadId, setThreadId] = useState("");
+  const [threadId, setThreadId] = useState(initialThreadId);
+
+  useEffect(() => {
+  if (initialThreadId) {
+    setThreadId(initialThreadId); // Sync prop to internal state
+    setMessages([]);              // Optional: clear old messages
+  }
+}, [initialThreadId]);
+
+
+  useEffect(() => {
+  const loadThreadMessages = async () => {
+    if (!initialThreadId) return;
+
+    try {
+      const res = await fetch(`/api/assistants/threads/${initialThreadId}/messages`);
+      const data = await res.json();
+
+      const loadedMessages = data.messages.map((msg) => ({
+        role: msg.role,
+        text: msg.content[0]?.text?.value || "",
+      }));
+
+      setMessages(loadedMessages);
+    } catch (error) {
+      console.error("Failed to load thread messages:", error);
+    }
+  };
+
+  loadThreadMessages();
+}, [initialThreadId]);
+
 
   // automatically scroll to bottom of chat
   const messagesEndRef = useRef<HTMLDivElement | null>(null);

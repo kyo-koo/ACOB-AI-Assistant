@@ -1,1 +1,12 @@
-[]
+[
+  {
+    "threadId": "thread_ZuPmHjfSRQeR2Nnu3fKDiwn0",
+    "assistantId": "asst_SnRuGNxq7U7uryBtKEuqbvkl",
+    "created_at": 1748032117
+  },
+  {
+    "threadId": "thread_9LY1o6ApbxlYWEgyww8Ijcxb",
+    "assistantId": "asst_SnRuGNxq7U7uryBtKEuqbvkl",
+    "created_at": 1748032143
+  }
+]

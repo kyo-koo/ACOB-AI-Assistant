@@ -1,5 +1,17 @@
+"use client";
+
 import React, { useState, useEffect } from "react";
 import styles from "./file-viewer.module.css";
+
+type Thread = {
+  thread_id: string;
+  thread_summary: string;
+  thread_created: string;
+};
+
+type ThreadViewerProps = {
+  onSelectThread: (threadId: string) => void;
+};
 
 const TrashIcon = () => (
   <svg
@@ -18,14 +30,13 @@ const TrashIcon = () => (
   </svg>
 );
 
-const ThreadViewer = () => {
-  const [threads, setThreads] = useState([]);
-  const [refreshTrigger, setRefreshTrigger] = useState(0); // New state
+const ThreadViewer = ({ onSelectThread }: ThreadViewerProps) => {
+  const [threads, setThreads] = useState<Thread[]>([]);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-  // Fetch files when the component mounts or refreshTrigger changes
   useEffect(() => {
     fetchThreads();
-  }, [refreshTrigger]); 
+  }, [refreshTrigger]);
 
   const fetchThreads = async () => {
     const resp = await fetch("/api/assistants/threads", {
@@ -35,19 +46,19 @@ const ThreadViewer = () => {
     setThreads(data);
   };
 
-  const handleThreadDelete = async (threadId) => {
-    const resp = await fetch("/api/assistants/threads", {
+  const handleThreadDelete = async (threadId: string) => {
+    await fetch("/api/assistants/threads", {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({threadId }),
+      body: JSON.stringify({ threadId }),
     });
-    setRefreshTrigger((prev) => prev + 1); // Trigger refresh
+    setRefreshTrigger((prev) => prev + 1);
   };
-  
+
   return (
     <div className={styles.fileViewer}>
-    <div className={styles.title}>Threads</div>
-    <div
+      <div className={styles.title}>Threads</div>
+      <div
         className={`${styles.filesList} ${
           threads.length !== 0 ? styles.grow : ""
         }`}
@@ -55,20 +66,28 @@ const ThreadViewer = () => {
         {threads.length === 0 ? (
           <div className={styles.title}>No thread found</div>
         ) : (
-          Array.isArray(threads) && threads.length > 0 && threads.map((thread) => (
-            <div key={thread.thread_id} className={styles.fileEntry}>
+          threads.map((thread) => (
+            <div
+              key={thread.thread_id}
+              className={styles.fileEntry}
+              onClick={() => onSelectThread(thread.thread_id)}
+            >
               <div className={styles.fileName}>
                 <span className={styles.fileName}>{thread.thread_summary}</span>
                 <span className={styles.fileStatus}>{thread.thread_created}</span>
               </div>
-              <span onClick={() => handleThreadDelete(thread.thread_id)}>
-              <TrashIcon />
+              <span
+                onClick={(e) => {
+                  e.stopPropagation(); // Prevent click from selecting thread
+                  handleThreadDelete(thread.thread_id);
+                }}
+              >
+                <TrashIcon />
               </span>
             </div>
           ))
         )}
       </div>
-      
     </div>
   );
 };
