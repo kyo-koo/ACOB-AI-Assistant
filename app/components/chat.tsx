@@ -283,7 +283,19 @@ const Chat = ({
   }
 
   return (
+    
     <div className={styles.chatContainer}>
+      <button
+      type="button"
+      className={styles.newThreadInsideInput}
+      onClick={() => {
+        setThreadId("");
+        setMessages([]);
+      }}
+      title="Start new thread"
+    >
+      ➕
+    </button>
       <div className={styles.messages}>
         {messages.map((msg, index) => (
           <Message key={index} role={msg.role} text={msg.text} />
@@ -300,6 +312,7 @@ const Chat = ({
           value={userInput}
           onChange={(e) => setUserInput(e.target.value)}
           placeholder="Enter your question"
+          
         />
         <button
           type="submit"
@@ -308,6 +321,7 @@ const Chat = ({
         >
           Send
         </button>
+        
       </form>
     </div>
   );

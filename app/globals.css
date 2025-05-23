@@ -47,6 +47,7 @@ a {
   margin: 16px;
   top: 0;
   right: 0;
+  visibility: hidden;
 }
 
 @media (max-width: 1100px) {
